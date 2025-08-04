@@ -23,7 +23,6 @@ import (
 	"time"
 
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/informers"
@@ -418,116 +417,6 @@ func TestBaseTestImplementationDeleteTestRoute(t *testing.T) {
 	}
 }
 
-// TestBaseTestImplementationCreateTestVolume tests creating a test volume
-func TestBaseTestImplementationCreateTestVolume(t *testing.T) {
-	fakeCloud := &fakecloud.Cloud{}
-	baseImpl := NewBaseTestImplementation(fakeCloud)
-
-	volumeConfig := &TestVolumeConfig{
-		Name:     "test-volume",
-		Capacity: v1.ResourceList{v1.ResourceStorage: resource.MustParse("10Gi")},
-		AccessModes: []v1.PersistentVolumeAccessMode{
-			v1.ReadWriteOnce,
-			v1.ReadOnlyMany,
-		},
-		PersistentVolumeSource: v1.PersistentVolumeSource{
-			HostPath: &v1.HostPathVolumeSource{
-				Path: "/tmp/test-volume",
-			},
-		},
-		StorageClassName: "standard",
-		Labels: map[string]string{
-			"volume-label": "test-value",
-		},
-		Annotations: map[string]string{
-			"volume.annotation": "test-value",
-		},
-	}
-
-	ctx := context.Background()
-	pv, err := baseImpl.CreateTestVolume(ctx, volumeConfig)
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
-	}
-
-	if pv.Name != "test-volume" {
-		t.Errorf("Expected volume name 'test-volume', got '%s'", pv.Name)
-	}
-
-	if pv.Spec.Capacity.Storage().String() != "10Gi" {
-		t.Errorf("Expected capacity '10Gi', got '%s'", pv.Spec.Capacity.Storage().String())
-	}
-
-	if len(pv.Spec.AccessModes) != 2 {
-		t.Errorf("Expected 2 access modes, got %d", len(pv.Spec.AccessModes))
-	}
-
-	if pv.Spec.PersistentVolumeSource.HostPath == nil {
-		t.Error("Expected host path volume source")
-	}
-
-	if pv.Spec.PersistentVolumeSource.HostPath.Path != "/tmp/test-volume" {
-		t.Errorf("Expected host path '/tmp/test-volume', got '%s'", pv.Spec.PersistentVolumeSource.HostPath.Path)
-	}
-
-	if pv.Spec.StorageClassName != "standard" {
-		t.Errorf("Expected storage class name 'standard', got '%s'", pv.Spec.StorageClassName)
-	}
-
-	if pv.Spec.PersistentVolumeReclaimPolicy != v1.PersistentVolumeReclaimDelete {
-		t.Errorf("Expected reclaim policy Delete, got %v", pv.Spec.PersistentVolumeReclaimPolicy)
-	}
-
-	if pv.Status.Phase != v1.VolumeAvailable {
-		t.Errorf("Expected status phase Available, got %v", pv.Status.Phase)
-	}
-
-	if len(pv.Labels) == 0 {
-		t.Error("Expected volume labels to be set")
-	}
-
-	if len(pv.Annotations) == 0 {
-		t.Error("Expected volume annotations to be set")
-	}
-
-	// Verify resource tracking
-	if len(baseImpl.CreatedResources["volume"]) != 1 {
-		t.Errorf("Expected 1 created volume, got %d", len(baseImpl.CreatedResources["volume"]))
-	}
-
-	if baseImpl.CreatedResources["volume"][0] != "test-volume" {
-		t.Errorf("Expected created volume 'test-volume', got '%s'", baseImpl.CreatedResources["volume"][0])
-	}
-
-	if baseImpl.TestResults.ResourceCounts["volume"] != 1 {
-		t.Errorf("Expected volume count 1, got %d", baseImpl.TestResults.ResourceCounts["volume"])
-	}
-}
-
-// TestBaseTestImplementationDeleteTestVolume tests deleting a test volume
-func TestBaseTestImplementationDeleteTestVolume(t *testing.T) {
-	fakeCloud := &fakecloud.Cloud{}
-	baseImpl := NewBaseTestImplementation(fakeCloud)
-
-	// Add a volume to created resources
-	baseImpl.CreatedResources["volume"] = []string{"test-volume-1", "test-volume-2"}
-
-	ctx := context.Background()
-	err := baseImpl.DeleteTestVolume(ctx, "test-volume-1")
-	if err != nil {
-		t.Fatalf("Expected no error, got %v", err)
-	}
-
-	// Verify volume is removed from created resources
-	if len(baseImpl.CreatedResources["volume"]) != 1 {
-		t.Errorf("Expected 1 remaining volume, got %d", len(baseImpl.CreatedResources["volume"]))
-	}
-
-	if baseImpl.CreatedResources["volume"][0] != "test-volume-2" {
-		t.Errorf("Expected remaining volume 'test-volume-2', got '%s'", baseImpl.CreatedResources["volume"][0])
-	}
-}
-
 // TestBaseTestImplementationWaitForCondition tests waiting for a condition
 func TestBaseTestImplementationWaitForCondition(t *testing.T) {
 	fakeCloud := &fakecloud.Cloud{}
@@ -850,7 +739,6 @@ func TestBaseTestImplementationResourceTracking(t *testing.T) {
 	nodeConfig2 := &TestNodeConfig{Name: "node-2", ProviderID: "test://node-2"}
 	serviceConfig1 := &TestServiceConfig{Name: "service-1", Namespace: "default", Type: v1.ServiceTypeClusterIP}
 	routeConfig1 := &TestRouteConfig{Name: "route-1", ClusterName: "test-cluster", TargetNode: "node-1", DestinationCIDR: "10.0.0.0/24"}
-	volumeConfig1 := &TestVolumeConfig{Name: "volume-1", Capacity: v1.ResourceList{v1.ResourceStorage: resource.MustParse("1Gi")}}
 
 	_, err := baseImpl.CreateTestNode(ctx, nodeConfig1)
 	if err != nil {
@@ -872,11 +760,6 @@ func TestBaseTestImplementationResourceTracking(t *testing.T) {
 		t.Fatalf("Failed to create route: %v", err)
 	}
 
-	_, err = baseImpl.CreateTestVolume(ctx, volumeConfig1)
-	if err != nil {
-		t.Fatalf("Failed to create volume: %v", err)
-	}
-
 	// Verify resource tracking
 	if len(baseImpl.CreatedResources["node"]) != 2 {
 		t.Errorf("Expected 2 nodes, got %d", len(baseImpl.CreatedResources["node"]))
@@ -890,10 +773,6 @@ func TestBaseTestImplementationResourceTracking(t *testing.T) {
 		t.Errorf("Expected 1 route, got %d", len(baseImpl.CreatedResources["route"]))
 	}
 
-	if len(baseImpl.CreatedResources["volume"]) != 1 {
-		t.Errorf("Expected 1 volume, got %d", len(baseImpl.CreatedResources["volume"]))
-	}
-
 	// Verify resource counts
 	if baseImpl.TestResults.ResourceCounts["node"] != 2 {
 		t.Errorf("Expected node count 2, got %d", baseImpl.TestResults.ResourceCounts["node"])
@@ -905,10 +784,6 @@ func TestBaseTestImplementationResourceTracking(t *testing.T) {
 
 	if baseImpl.TestResults.ResourceCounts["route"] != 1 {
 		t.Errorf("Expected route count 1, got %d", baseImpl.TestResults.ResourceCounts["route"])
-	}
-
-	if baseImpl.TestResults.ResourceCounts["volume"] != 1 {
-		t.Errorf("Expected volume count 1, got %d", baseImpl.TestResults.ResourceCounts["volume"])
 	}
 
 	// Delete some resources

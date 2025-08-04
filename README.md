@@ -319,7 +319,7 @@ import (
     "context"
     "fmt"
     
-    "your-cloud-provider/pkg/cloudprovider"
+    "k8s.io/cloudprovider"
     testing "github.com/miyadav/cloud-provider-testing-interface"
 )
 

@@ -23,7 +23,6 @@ import (
 	"time"
 
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/informers"
@@ -854,62 +853,6 @@ func TestTestRouteConfigValidation(t *testing.T) {
 
 	if routeConfig.Blackhole {
 		t.Error("Expected blackhole to be false")
-	}
-}
-
-// TestTestVolumeConfigValidation tests TestVolumeConfig validation
-func TestTestVolumeConfigValidation(t *testing.T) {
-	volumeConfig := &TestVolumeConfig{
-		Name:     "test-volume",
-		Capacity: v1.ResourceList{v1.ResourceStorage: resource.MustParse("10Gi")},
-		AccessModes: []v1.PersistentVolumeAccessMode{
-			v1.ReadWriteOnce,
-			v1.ReadOnlyMany,
-		},
-		PersistentVolumeSource: v1.PersistentVolumeSource{
-			HostPath: &v1.HostPathVolumeSource{
-				Path: "/tmp/test-volume",
-			},
-		},
-		StorageClassName: "standard",
-		Labels: map[string]string{
-			"volume-label": "test-value",
-		},
-		Annotations: map[string]string{
-			"volume.annotation": "test-value",
-		},
-	}
-
-	if volumeConfig.Name != "test-volume" {
-		t.Errorf("Expected volume name 'test-volume', got '%s'", volumeConfig.Name)
-	}
-
-	if volumeConfig.Capacity.Storage().String() != "10Gi" {
-		t.Errorf("Expected capacity '10Gi', got '%s'", volumeConfig.Capacity.Storage().String())
-	}
-
-	if len(volumeConfig.AccessModes) != 2 {
-		t.Errorf("Expected 2 access modes, got %d", len(volumeConfig.AccessModes))
-	}
-
-	if volumeConfig.PersistentVolumeSource.HostPath == nil {
-		t.Error("Expected host path volume source")
-	}
-
-	if volumeConfig.PersistentVolumeSource.HostPath.Path != "/tmp/test-volume" {
-		t.Errorf("Expected host path '/tmp/test-volume', got '%s'", volumeConfig.PersistentVolumeSource.HostPath.Path)
-	}
-
-	if volumeConfig.StorageClassName != "standard" {
-		t.Errorf("Expected storage class name 'standard', got '%s'", volumeConfig.StorageClassName)
-	}
-
-	if len(volumeConfig.Labels) != 1 {
-		t.Errorf("Expected 1 label, got %d", len(volumeConfig.Labels))
-	}
-
-	if len(volumeConfig.Annotations) != 1 {
-		t.Errorf("Expected 1 annotation, got %d", len(volumeConfig.Annotations))
 	}
 }
 

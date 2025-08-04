@@ -265,54 +265,6 @@ func (b *BaseTestImplementation) DeleteTestRoute(ctx context.Context, routeName 
 	return nil
 }
 
-// CreateTestVolume creates a test volume.
-func (b *BaseTestImplementation) CreateTestVolume(ctx context.Context, volumeConfig *TestVolumeConfig) (*v1.PersistentVolume, error) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	pv := &v1.PersistentVolume{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:        volumeConfig.Name,
-			Labels:      volumeConfig.Labels,
-			Annotations: volumeConfig.Annotations,
-		},
-		Spec: v1.PersistentVolumeSpec{
-			Capacity:                      volumeConfig.Capacity,
-			AccessModes:                   volumeConfig.AccessModes,
-			PersistentVolumeSource:        volumeConfig.PersistentVolumeSource,
-			StorageClassName:              volumeConfig.StorageClassName,
-			PersistentVolumeReclaimPolicy: v1.PersistentVolumeReclaimDelete,
-		},
-		Status: v1.PersistentVolumeStatus{
-			Phase: v1.VolumeAvailable,
-		},
-	}
-
-	// Track created resource
-	b.CreatedResources["volume"] = append(b.CreatedResources["volume"], volumeConfig.Name)
-	b.TestResults.IncrementResourceCount("volume")
-
-	b.TestResults.AddLog(fmt.Sprintf("Created test volume: %s", volumeConfig.Name))
-	return pv, nil
-}
-
-// DeleteTestVolume deletes a test volume.
-func (b *BaseTestImplementation) DeleteTestVolume(ctx context.Context, volumeName string) error {
-	b.mu.Lock()
-	defer b.mu.Unlock()
-
-	// Remove from created resources
-	for i, name := range b.CreatedResources["volume"] {
-		if name == volumeName {
-			b.CreatedResources["volume"] = append(b.CreatedResources["volume"][:i], b.CreatedResources["volume"][i+1:]...)
-			break
-		}
-	}
-
-	b.TestResults.AddLog(fmt.Sprintf("Deleted test volume: %s", volumeName))
-	return nil
-}
-
 // WaitForCondition waits for a specific condition to be met.
 func (b *BaseTestImplementation) WaitForCondition(ctx context.Context, condition TestCondition) error {
 	timeout := condition.Timeout

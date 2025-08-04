@@ -64,14 +64,6 @@ type TestInterface interface {
 	// DeleteTestRoute deletes a test route.
 	DeleteTestRoute(ctx context.Context, routeName string) error
 
-	// CreateTestVolume creates a test volume with the specified configuration.
-	CreateTestVolume(ctx context.Context, volumeConfig *TestVolumeConfig) (*v1.PersistentVolume, error)
-
-	// DeleteTestVolume deletes a test volume.
-	DeleteTestVolume(ctx context.Context, volumeName string) error
-
-	// WaitForCondition waits for a specific condition to be met.
-	// This is useful for waiting for resources to be created, updated, or deleted.
 	WaitForCondition(ctx context.Context, condition TestCondition) error
 
 	// GetTestResults returns the results of the test execution.

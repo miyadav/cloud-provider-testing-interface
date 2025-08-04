@@ -24,12 +24,10 @@ import (
 	"time"
 
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes/fake"
-	cloudprovider "k8s.io/cloud-provider"
 	fakecloud "k8s.io/cloud-provider/fake"
 )
 
@@ -73,12 +71,6 @@ func CreateExampleTestSuite() TestSuite {
 				Description: "Tests that routes can be created and managed",
 				Run:         testRouteManagement,
 				Timeout:     1 * time.Minute,
-			},
-			{
-				Name:        "Test Volume Operations",
-				Description: "Tests volume creation and management",
-				Run:         testVolumeOperations,
-				Timeout:     2 * time.Minute,
 			},
 		},
 	}
@@ -317,50 +309,6 @@ func testRouteManagement(ti TestInterface) error {
 	return nil
 }
 
-// testVolumeOperations tests volume operations functionality.
-func testVolumeOperations(ti TestInterface) error {
-	ctx := context.Background()
-
-	// Create a test volume
-	volumeConfig := &TestVolumeConfig{
-		Name:     "test-volume",
-		Capacity: v1.ResourceList{v1.ResourceStorage: resource.MustParse("10Gi")},
-		AccessModes: []v1.PersistentVolumeAccessMode{
-			v1.ReadWriteOnce,
-		},
-		PersistentVolumeSource: v1.PersistentVolumeSource{
-			HostPath: &v1.HostPathVolumeSource{
-				Path: "/tmp/test-volume",
-			},
-		},
-		StorageClassName: "standard",
-		Labels: map[string]string{
-			"test-label": "test-value",
-		},
-	}
-
-	pv, err := ti.CreateTestVolume(ctx, volumeConfig)
-	if err != nil {
-		return fmt.Errorf("failed to create test volume: %w", err)
-	}
-
-	// Test PVLabeler functionality if supported
-	cloud := ti.GetCloudProvider()
-	if pvLabeler, ok := cloud.(cloudprovider.PVLabeler); ok {
-		labels, err := pvLabeler.GetLabelsForVolume(ctx, pv)
-		if err != nil {
-			return fmt.Errorf("failed to get volume labels: %w", err)
-		}
-
-		if labels == nil {
-			return fmt.Errorf("volume labels should not be nil")
-		}
-	}
-
-	ti.GetTestResults().AddLog("Volume operations test completed successfully")
-	return nil
-}
-
 // ExampleTestRunner demonstrates how to use the TestRunner to run tests.
 func ExampleTestRunner() {
 	// Create a fake test implementation
@@ -423,11 +371,6 @@ func TestExampleTestSuite(t *testing.T) {
 	fakeCloud.InstanceTypes[types.NodeName("test-node-3")] = "t3.medium"
 	fakeCloud.ExistsByProviderID = true
 	fakeCloud.ExternalIP = net.ParseIP("192.168.1.100")
-	fakeCloud.VolumeLabelMap["test-volume"] = map[string]string{
-		"test-label": "test-value",
-		"zone":       "us-west-1a",
-		"region":     "us-west-1",
-	}
 
 	// Create a test runner
 	runner := NewTestRunner(fakeImpl)
@@ -462,13 +405,12 @@ func TestExampleTestSuite(t *testing.T) {
 func TestBaseTestImplementation(t *testing.T) {
 	// Create a fake cloud provider
 	fakeCloud := &fakecloud.Cloud{
-		Balancers:      make(map[string]fakecloud.Balancer),
-		ExtID:          make(map[types.NodeName]string),
-		ExtIDErr:       make(map[types.NodeName]error),
-		InstanceTypes:  make(map[types.NodeName]string),
-		ProviderID:     make(map[types.NodeName]string),
-		RouteMap:       make(map[string]*fakecloud.Route),
-		VolumeLabelMap: make(map[string]map[string]string),
+		Balancers:     make(map[string]fakecloud.Balancer),
+		ExtID:         make(map[types.NodeName]string),
+		ExtIDErr:      make(map[types.NodeName]error),
+		InstanceTypes: make(map[types.NodeName]string),
+		ProviderID:    make(map[types.NodeName]string),
+		RouteMap:      make(map[string]*fakecloud.Route),
 	}
 
 	// Create base test implementation
