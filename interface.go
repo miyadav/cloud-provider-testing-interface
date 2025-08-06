@@ -184,30 +184,6 @@ type TestRouteConfig struct {
 	Blackhole bool
 }
 
-// TestVolumeConfig holds the configuration for creating a test volume.
-type TestVolumeConfig struct {
-	// Name is the name of the test volume.
-	Name string
-
-	// Capacity is the capacity of the volume.
-	Capacity v1.ResourceList
-
-	// AccessModes are the access modes of the volume.
-	AccessModes []v1.PersistentVolumeAccessMode
-
-	// PersistentVolumeSource is the source of the persistent volume.
-	PersistentVolumeSource v1.PersistentVolumeSource
-
-	// StorageClassName is the storage class name.
-	StorageClassName string
-
-	// Labels are the labels to be applied to the volume.
-	Labels map[string]string
-
-	// Annotations are the annotations to be applied to the volume.
-	Annotations map[string]string
-}
-
 // TestCondition represents a condition that should be met during testing.
 type TestCondition struct {
 	// Type is the type of the condition.

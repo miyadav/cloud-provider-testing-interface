@@ -324,13 +324,12 @@ type FakeTestImplementation struct {
 // NewFakeTestImplementation creates a new fake test implementation.
 func NewFakeTestImplementation() *FakeTestImplementation {
 	fakeCloud := &fakecloud.Cloud{
-		Balancers:      make(map[string]fakecloud.Balancer),
-		ExtID:          make(map[types.NodeName]string),
-		ExtIDErr:       make(map[types.NodeName]error),
-		InstanceTypes:  make(map[types.NodeName]string),
-		ProviderID:     make(map[types.NodeName]string),
-		RouteMap:       make(map[string]*fakecloud.Route),
-		VolumeLabelMap: make(map[string]map[string]string),
+		Balancers:     make(map[string]fakecloud.Balancer),
+		ExtID:         make(map[types.NodeName]string),
+		ExtIDErr:      make(map[types.NodeName]error),
+		InstanceTypes: make(map[types.NodeName]string),
+		ProviderID:    make(map[types.NodeName]string),
+		RouteMap:      make(map[string]*fakecloud.Route),
 	}
 
 	baseImpl := NewBaseTestImplementation(fakeCloud)

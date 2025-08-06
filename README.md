@@ -30,8 +30,6 @@ type TestInterface interface {
     DeleteTestService(ctx context.Context, serviceName string) error
     CreateTestRoute(ctx context.Context, routeConfig *TestRouteConfig) (*cloudprovider.Route, error)
     DeleteTestRoute(ctx context.Context, routeName string) error
-    CreateTestVolume(ctx context.Context, volumeConfig *TestVolumeConfig) (*v1.PersistentVolume, error)
-    DeleteTestVolume(ctx context.Context, volumeName string) error
     WaitForCondition(ctx context.Context, condition TestCondition) error
     GetTestResults() *TestResults
     ResetTestState() error
@@ -92,7 +90,6 @@ The interface provides methods for creating and managing test resources:
 - **Nodes**: Test node registration, addressing, and metadata
 - **Services**: Test load balancer creation and management
 - **Routes**: Test route creation and management
-- **Volumes**: Test volume operations and labeling
 
 ### 3. Test State Management
 The interface includes comprehensive test state management:
@@ -214,7 +211,7 @@ func testLoadBalancer(ti TestInterface) error {
 4. **Initialize Cloud Provider**: Call the cloud provider's Initialize method
 
 ### Step 2: Test Execution
-1. **Create Test Resources**: Use the interface to create nodes, services, routes, and volumes
+1. **Create Test Resources**: Use the interface to create nodes, services, and routes
 2. **Test Cloud Provider Methods**: Call cloud provider methods and verify results
 3. **Verify Resource State**: Check that resources are in the expected state
 4. **Test Error Conditions**: Verify proper error handling
