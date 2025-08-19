@@ -1,5 +1,7 @@
 # Cloud Provider Testing Interface
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/miyadav/cloud-provider-testing-interface)
+
 This package provides a cloud-agnostic testing interface for Kubernetes cloud providers, similar to how `cloud.go` provides a common interface for cloud provider implementations. The testing interface allows cloud provider developers to write tests that are independent of the specific cloud provider implementation while ensuring consistent behavior across all cloud providers.
 
 ## Overview
@@ -805,4 +807,4 @@ If you encounter issues while integrating the testing interface into your cloud 
 1. Check the [examples](examples_test.go) for usage patterns
 2. Review the [test implementations](implementation_test.go) for best practices
 3. Open an issue in the [repository](https://github.com/miyadav/cloud-provider-testing-interface/issues)
-4. Join the Kubernetes cloud provider community discussions 
+4. Join the Kubernetes cloud provider community discussions
