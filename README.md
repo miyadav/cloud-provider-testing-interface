@@ -2,6 +2,8 @@
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/miyadav/cloud-provider-testing-interface)
 
+Reference [Idea](https://hackmd.io/@elmiko/ByfaBO4JJe)
+
 This package provides a cloud-agnostic testing interface for Kubernetes cloud providers, similar to how `cloud.go` provides a common interface for cloud provider implementations. The testing interface allows cloud provider developers to write tests that are independent of the specific cloud provider implementation while ensuring consistent behavior across all cloud providers.
 
 ## Overview
